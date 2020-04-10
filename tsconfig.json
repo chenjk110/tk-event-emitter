@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "UMD",
+        "alwaysStrict": true,
+        "declaration": true,
+        "outDir": "dist",
+        "lib": [
+            "ESNext",
+        ]
+    }
+}
