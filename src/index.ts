@@ -18,7 +18,7 @@ class TKEventEmitter {
   }
 
   private executing(fns: Function[]) {
-    fns.forEach((fn) => globalThis.setTimeout(fn, 0));
+    fns.forEach((fn) => fn());
   }
 
   public addEventListener(eventName: string | symbol, listener: Function) {
