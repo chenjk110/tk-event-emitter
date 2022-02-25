@@ -1,9 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TKEventEmitter = void 0;
 /**
  * @name TKEventEmitter
  * @license MIT
  * @author TanKingKhun
  */
-export class TKEventEmitter {
+class TKEventEmitter {
     constructor() {
         this.cache = Object.create(null);
     }
@@ -86,5 +89,6 @@ export class TKEventEmitter {
         return this;
     }
 }
+exports.TKEventEmitter = TKEventEmitter;
 TKEventEmitter.shared = new TKEventEmitter;
-export default TKEventEmitter;
+exports.default = TKEventEmitter;

@@ -1,108 +1,91 @@
+type AnyFunc = (...args: any) => any
+
 /**
  * @name TKEventEmitter
  * @license MIT
- * @description
- * custom events emitter inspired by Events module of Node.js
  * @author TanKingKhun
  */
-class TKEventEmitter {
-  private listenersCache: Map<string | symbol, Set<Function>> = new Map();
-  private oncedFnMap: Map<Function, Function> = new Map();
-
-  get eventNames() {
-    return Array.from(this.listenersCache.keys());
-  }
-
-  private getCache(eventName: string | symbol) {
-    return this.listenersCache.get(eventName);
-  }
-
-  private executing(fns: Function[]) {
-    fns.forEach((fn) => fn());
-  }
-
-  public addEventListener(eventName: string | symbol, listener: Function) {
-    const cache = this.getCache(eventName);
-    if (cache) {
-      cache.add(listener);
-    } else {
-      this.listenersCache.set(eventName, new Set([listener]));
+export class TKEventEmitter {
+    static readonly shared = new TKEventEmitter
+    private cache: Record<string | symbol, AnyFunc[]> = Object.create(null)
+    get eventNames() {
+        return Object.keys(this.cache)
     }
-    return this;
-  }
-
-  public removeAllListeners(eventName?: string | symbol) {
-    if (eventName) {
-      this.listenersCache.get(eventName).forEach((fn) => {
-        // remove all once cached fn
-        this.oncedFnMap.delete(fn);
-      });
-      this.listenersCache.delete(eventName);
-    } else {
-      this.listenersCache = new Map();
+    addEventListener(name: string | symbol, listener: AnyFunc) {
+        if (!name) {
+            return this
+        }
+        const funcs = this.cache[name] || []
+        this.cache[name] = funcs
+        if (funcs.indexOf(listener) < 0) {
+            funcs.push(listener)
+        }
+        return this
     }
-  }
-
-  public removeListener(eventName: string | symbol, listener: Function) {
-    const cache = this.getCache(eventName);
-    if (cache) {
-      return cache.delete(listener);
+    removeAllListeners(name?: string | symbol) {
+        if (!name) {
+            this.cache = Object.create(null)
+            return true
+        }
+        const funcs = this.cache[name]
+        if (funcs) {
+            this.cache[name] = []
+            return true
+        }
+        return false
     }
-    return false;
-  }
+    removeListener(name: string | symbol, listener: AnyFunc) {
+        if (!name) {
+            return false
+        }
+        const funcs = this.cache[name]
+        if (funcs) {
+            const index = funcs.indexOf(listener)
+            if (index > -1) {
+                funcs.splice(index, 1)
+                return true
+            }
+        }
 
-  public listenerCount(eventName: string | symbol) {
-    const cache = this.getCache(eventName);
-    if (cache) {
-      return cache.size;
+        return false
     }
-    return 0;
-  }
-
-  public listeners(eventName: string | symbol) {
-    const cache = this.getCache(eventName);
-    if (cache) {
-      return Array.from(cache);
+    listenerCount(name: string | symbol) {
+        return (this.cache[name] || []).length
     }
-    return [];
-  }
-
-  public emit(eventName: string | symbol, ...args: any[]) {
-    const cache = this.getCache(eventName);
-    if (cache) {
-      const bindedFn = Array.from(cache).map((fn) => fn.bind(null, ...args));
-      this.executing(bindedFn);
+    listeners(name: string | symbol) {
+        return this.cache[name] || []
     }
-    return this;
-  }
-
-  public off(eventName: string | symbol, listener: Function) {
-    const cache = this.getCache(eventName);
-    if (cache) {
-      const wrap = this.oncedFnMap.get(listener);
-      if (wrap) {
-        this.oncedFnMap.delete(listener);
-        return cache.delete(wrap);
-      }
-      return cache.delete(listener);
+    emit(name: string | symbol, ...args: any[]) {
+        const funcs = this.cache[name]
+        if (funcs) {
+            const queue = funcs.slice()
+            try {
+                for (let i = 0, size = queue.length; i < size; i++) {
+                    queue[i](...args)
+                }
+            } catch (err) {
+                this.emit('error', err)
+                throw err
+            }
+        }
     }
-    return false;
-  }
-
-  public on(eventName: string | symbol, listener: Function) {
-    return this.addEventListener(eventName, listener);
-  }
-
-  public once(eventName: string | symbol, listener: Function) {
-    const wrap = (...args: any[]) => {
-      try {
-        listener.call(null, ...args);
-      } catch (err) {
-        this.off(eventName, wrap);
-        throw err;
-      }
-    };
-    this.oncedFnMap.set(listener, wrap);
-    return this.addEventListener(eventName, wrap);
-  }
+    off(name: string | symbol, listener: AnyFunc) {
+        return this.removeListener(name, listener)
+    }
+    on(name: string | symbol, listener: AnyFunc) {
+        return this.addEventListener(name, listener)
+    }
+    once(name: string | symbol, listener: AnyFunc) {
+        const funcs = this.cache[name] || []
+        const autoRemove = () => {
+            this.removeListener(name, listener)
+            this.removeListener(name, autoRemove)
+        }
+        funcs.push(listener)
+        funcs.push(autoRemove)
+        this.cache[name] = funcs
+        return this
+    }
 }
+
+export default TKEventEmitter
