@@ -5,8 +5,10 @@
         "alwaysStrict": true,
         "declaration": true,
         "outDir": "dist",
-        "lib": [
-            "ESNext",
-        ]
-    }
+        "baseUrl": ".",
+        "skipLibCheck": true
+    },
+    "files": [
+        "src/index.ts"
+    ]
 }

@@ -1,7 +1,7 @@
 # TKEventEmitter
 
-- `version: 0.1.0`
-- `update: 2020.4.10`
+- `version: 0.2.2`
+- `update: 2022.2.25`
 
 ## API
 
