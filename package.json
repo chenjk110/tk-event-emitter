@@ -1,19 +1,13 @@
 {
   "name": "tk-event-emitter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "custom events emitter inspired by Events module of Node.js",
   "main": "dist/index.min.js",
-  "main:cjs": "dist/cjs/index.min.js",
-  "main:esm": "dist/esm/index.min.js",
-  "main:umd": "dist/umd/index.min.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "start": "nodemon --watch src/index.ts --exec 'node --require ts-node/register src/index.ts'",
     "minify": "uglifyjs --compress --mangle --output dist/index.min.js -- dist/index.js",
-    "tsc:esm": "tsc -t es2015 -m es2015 --outDir dist/esm",
-    "tsc:cjs": "tsc -t es2015 -m commonjs --outDir dist/cjs",
-    "tsc:umd": "tsc -t es5 -m umd --outDir dist/umd",
-    "tsc": "tsc && npm run tsc:esm && npm run tsc:umd && npm run tsc:cjs",
+    "tsc": "tsc -t es5 -m umd --outDir dist",
     "build": "rm -rf ./dist && npm run tsc && npm run minify"
   },
   "repository": {
